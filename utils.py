@@ -31,3 +31,25 @@ def batch_match(noisy, mfccs):
     similarity = torch.bmm(query, k)
     similarity = torch.topk(similarity, k=5)[1]
     return similarity
+
+def prepare_references(list_refs):
+    waveforms, mfccs, stfts = [], [], []
+    ref_length = 16384 * 15
+    for ref_path in list_refs:
+        waveform = torchaudio.load(ref_path)[0]
+        mfcc_data = mfcc(waveform).squeeze()
+        stft_data = stft(waveform).squeeze()
+
+        waveforms.append(waveform)
+        mfccs.append(mfcc_data)
+        stfts.append(stft_data)
+
+    waveforms_data = torch.cat(waveforms, dim=1)
+    mfccs_data = torch.cat(mfccs, dim=1)
+    stfts_data = torch.cat(stfts, dim=1)
+
+    stfts_data = stfts_data[:, :ref_length // 128 + 1, :]
+    mfccs_data = mfccs_data[:, :ref_length // 128 + 1]
+    waves_data = waveforms_data[:, :ref_length]
+    reference = {"stfts" : stfts_data, "mfccs" : mfccs_data, "waves" : waves_data}
+    return reference

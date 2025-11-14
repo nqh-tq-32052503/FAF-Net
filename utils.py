@@ -37,6 +37,7 @@ def prepare_references(list_refs):
     ref_length = 16384 * 15
     for ref_path in list_refs:
         waveform = torchaudio.load(ref_path)[0]
+        waveform = waveform.cuda()
         mfcc_data = mfcc(waveform).squeeze()
         stft_data = stft(waveform).squeeze()
 

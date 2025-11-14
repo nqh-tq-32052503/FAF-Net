@@ -9,11 +9,13 @@ mfcc = torchaudio.transforms.MFCC(sample_rate=16000, n_mfcc=13, dct_type=2, norm
 
 
 def stft(wave):
-    return torch.stft(wave, n_fft=512, hop_length=128, win_length=512, window=torch.hann_window(512).to(wave.device))
+    a = torch.stft(wave, n_fft=512, hop_length=128, win_length=512, window=torch.hann_window(512).to(wave.device), return_complex=True)
+    return torch.view_as_real(a)
 
 
 def istft(spectra, length):
-    return torch.istft(spectra, length=length, n_fft=512, hop_length=128, win_length=512, window=torch.hann_window(512).to(spectra.device))
+    b = torch.view_as_complex(spectra)
+    return torch.istft(b, length=length, n_fft=512, hop_length=128, win_length=512, window=torch.hann_window(512).to(spectra.device), normalized=True,  onesided=True)
 
 def batch_match(noisy, mfccs):
     b, _ = noisy.shape
